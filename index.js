@@ -1,4 +1,3 @@
-var fsSync = require('fs-sync');
 var fs = require('fs-extra');
 var glob = require('glob');
 var lwip = require('lwip');
@@ -11,14 +10,12 @@ var options = commandLineArguments([
   {name: 'samplesize', alias: 's', type: Number},
   {name: 'files', type: String, multiple: true, defaultOption: true}
 ]).parse();
-
 var mediaDir = options.files[0],
     copyMediaDir = options.files[1];
 
 if (!mediaDir || !copyMediaDir) {
   throw new Error("Must provide arguments for existing media directory and target location.");
 }
-
 var sampleSize = options.samplesize || 10,
     batchSize = options.batchsize || 100,
     verbose = options.verbose;
@@ -44,8 +41,9 @@ var blacklistExtensions = [
   '.c'
 ];
 
-if (!fsSync.exists(copyMediaDir)){
-  fsSync.mkdir(copyMediaDir);
+if (!fs.existsSync(copyMediaDir)){
+
+  fs.mkdirSync(copyMediaDir);
 }
 
 var calculateAspectRation = function(width, height) {
@@ -64,13 +62,13 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
     }
 
     // While 'fs-sync' is awesome, this is still necessary for image.writeFile
-    if (!fsSync.exists(copyFileDir)) {
-      fsSync.mkdir(copyFileDir);
+    if (!fs.existsSync(copyFileDir)) {
+      fs.mkdirSync(copyFileDir);
     }
 
     // If the file is not an image file, just copy it
     if (!imgExtensions.some(function(ext){return ext == path.extname(file);})) {
-      fsSync.copy(file, copyFile);
+      fs.copySync(file, copyFile);
       if (verbose) console.log("Copying non-image file: " + file + " to " + copyFile);
       return;
     }
@@ -98,14 +96,14 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
       if (images[width][height].length < sampleSize) {
         // Copy image
         images[width][height].push(copyFile);
-        fsSync.copy(file, copyFile);
+        fs.copySync(file, copyFile);
         if (verbose) console.log("Copying image file: " + file + " to " + copyFile);
       } else {
         // Create link to random previously copied image
         var randomIndex = Math.floor(images[width][height].length * Math.random()),
             randomImage = images[width][height][randomIndex];
 
-        fs.link(randomImage, copyFile);
+        fs.link(randomImage, cllopyFile);
         if (verbose) console.log("Linking image file: " + randomImage + " to " + copyFile)
       }
     });
