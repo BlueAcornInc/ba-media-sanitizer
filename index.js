@@ -2,6 +2,8 @@ var fs = require('fs-extra');
 var glob = require('glob');
 var lwip = require('lwip');
 var path = require('path');
+var mkdirp = require('mkdirp');
+
 var commandLineArguments = require('command-line-args');
 
 var options = commandLineArguments([
@@ -41,9 +43,12 @@ var blacklistExtensions = [
   '.c'
 ];
 
-if (!fs.existsSync(copyMediaDir)){
 
-  fs.mkdirSync(copyMediaDir);
+if (!fs.existsSync(copyMediaDir)){
+  mkdirp(copyMediaDir, function(err){
+    if (err) { console.error(err) }
+    else if (verbose) { console.log('Created new directory: ' + copyMediaDir)}
+  });
 }
 
 var calculateAspectRation = function(width, height) {
@@ -63,7 +68,10 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
 
     // While 'fs-sync' is awesome, this is still necessary for image.writeFile
     if (!fs.existsSync(copyFileDir)) {
-      fs.mkdirSync(copyFileDir);
+      mkdirp(copyFileDir, function(err){
+        if (err) { console.error(err) }
+        else if (verbose) { console.log('Created new directories / files' + copyFileDir)}
+      });
     }
 
     // If the file is not an image file, just copy it
