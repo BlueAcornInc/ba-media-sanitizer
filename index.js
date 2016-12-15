@@ -1,7 +1,17 @@
-var fs = require('fs-extra');
+var fsExtra = require('fs-extra');
+/*
+ * TODO Using graceful-fs for EMFILE errors. But problem is fsExtra, .copySync method
+ * which doesn't exist in fs, so graceful-fs will not help us here.
+ */
+
+var fs = require('graceful-fs');
 var glob = require('glob');
 var lwip = require('lwip');
 var path = require('path');
+/*
+ * TODO Can use to create parent dir where none exist,
+ * or fsExtra.mkdirp() if we end up keeping fs-extra
+ */
 var mkdirp = require('mkdirp');
 
 var commandLineArguments = require('command-line-args');
@@ -76,44 +86,49 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
 
     // If the file is not an image file, just copy it
     if (!imgExtensions.some(function(ext){return ext == path.extname(file);})) {
-      fs.copySync(file, copyFile);
+      //fs does not have a copy method, need fs-extra
+      fsExtra.copySync(file, copyFile);
       if (verbose) console.log("Copying non-image file: " + file + " to " + copyFile);
       return;
     }
 
-    lwip.open(file, function(err, image) {
-      if (err) {
-        return console.error(err);
-      }
+    fs.readFile(file, function(err,buffer) {
+      
+      lwip.open(buffer, path.extname(file).substring(1), function (err,image) {
+        if (err) {
+          return console.error(err);
+        }
 
-      var width = image.width(),
-          height = image.height();
+        var width = image.width(),
+            height = image.height();
 
-      var aspectRation = calculateAspectRation(width, height);
+        var aspectRation = calculateAspectRation(width, height);
 
-      width = width/aspectRation;
-      height = height/aspectRation;
+        width = width/aspectRation;
+        height = height/aspectRation;
 
-      if (!images.hasOwnProperty(width)) {
-        images[width] = {};
-      }
-      if (!images[width].hasOwnProperty(height)) {
-        images[width][height] = [];
-      }
+        if (!images.hasOwnProperty(width)) {
+          images[width] = {};
+        }
+        if (!images[width].hasOwnProperty(height)) {
+          images[width][height] = [];
+        }
 
-      if (images[width][height].length < sampleSize) {
-        // Copy image
-        images[width][height].push(copyFile);
-        fs.copySync(file, copyFile);
-        if (verbose) console.log("Copying image file: " + file + " to " + copyFile);
-      } else {
-        // Create link to random previously copied image
-        var randomIndex = Math.floor(images[width][height].length * Math.random()),
-            randomImage = images[width][height][randomIndex];
+        if (images[width][height].length < sampleSize) {
+          // Copy image
+          images[width][height].push(copyFile);
+          fsExtra.copySync(file, copyFile);
+          if (verbose) console.log("Copying image file: " + file + " to " + copyFile);
+        } else {
+          // Create link to random previously copied image
+          var randomIndex = Math.floor(images[width][height].length * Math.random()),
+              randomImage = images[width][height][randomIndex];
 
-        fs.link(randomImage, cllopyFile);
-        if (verbose) console.log("Linking image file: " + randomImage + " to " + copyFile)
-      }
+          fs.link(randomImage, copyFile);
+          if (verbose) console.log("Linking image file: " + randomImage + " to " + copyFile)
+        }
+
+      });
     });
   });
 });
