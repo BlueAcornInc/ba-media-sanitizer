@@ -4,10 +4,14 @@
   "private": true,
   "dependencies": {
     "command-line-args": "^2.1.6",
+    "copy": "^0.3.0",
     "fs-extra": "^1.0.0",
     "fs-sync": "^1.0.1",
     "glob": "^6.0.4",
     "lwip": "0.0.8",
     "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "graceful-fs": "^4.1.11"
   }
 }
