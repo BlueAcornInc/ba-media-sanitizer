@@ -3,13 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "calipers": "^2.0.0",
+    "calipers-gif": "^2.0.0",
+    "calipers-jpeg": "^2.0.0",
+    "calipers-png": "^2.0.0",
     "command-line-args": "^2.1.6",
-    "copy": "^0.3.0",
     "fs-extra": "^1.0.0",
-    "fs-sync": "^1.0.1",
     "glob": "^6.0.4",
-    "lwip": "0.0.8",
-    "path": "^0.12.7"
+    "mkdirp": "^0.5.1",
+    "path": "^0.12.7",
+    "quickly-copy-file": "^1.0.0"
   },
   "devDependencies": {
     "graceful-fs": "^4.1.11"
