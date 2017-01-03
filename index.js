@@ -82,6 +82,10 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
       return;
     }
 
+    /**
+     * TODO Some images cannot be read,
+     * 'fd must be a file descriptor'
+     */
     calipers.measure(file,function(err,result) {
       if(err){console.error(err)}
       if(result == undefined) {
@@ -114,6 +118,11 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
         });
       } else {
         // Create link to random previously copied image
+        /* TODO There has got to be a better way to do this.
+         * But still generating 'No such file or directory'
+         * on some images when trying to create link
+         * */
+
         var randomImage = getRandomCopiedImage(images,width,height);
 
         var counter = 0;
