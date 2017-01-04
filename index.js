@@ -87,7 +87,11 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
      * 'fd must be a file descriptor'
      */
     calipers.measure(file,function(err,result) {
-      if(err){console.error(err)}
+      if(err){
+
+        console.log(file);
+        console.error(err);
+      }
       if(result == undefined) {
         return console.log('Result was undefined, could not read file: ' + file);
       }
@@ -109,13 +113,15 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
         // Copy image
         images[width][height].push(copyFile);
 
-        copyfiles(file, copyFile, function (err, file) {
-          if (err) {
-            console.error(err)
-          }
-          else if (verbose) console.error("Copying image file: " + file + " to " + copyFile);
 
-        });
+        fs.copySync(file,copyFile);
+        // copyfiles(file, copyFile, function (err, file) {
+        //   if (err) {
+        //     console.error(err)
+        //   }
+        //   else if (verbose) console.error("Copying image file: " + file + " to " + copyFile);
+        //
+        // });
       } else {
         // Create link to random previously copied image
         /* TODO There has got to be a better way to do this.
@@ -136,9 +142,7 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
 
         fs.ensureLink(randomImage, copyFile, function (err) {
           if (err) {
-            console.log('Random image: ' + randomImage);
-            console.log('copyFile: ' + copyFile);
-            console.log(images);
+            console.log("Could not link " + randomImage + " to " + copyFile);
             console.error(err)
           }
           else if (verbose) {
