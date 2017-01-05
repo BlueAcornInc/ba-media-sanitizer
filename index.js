@@ -131,15 +131,6 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
 
         var randomImage = getRandomCopiedImage(images,width,height);
 
-        var counter = 0;
-        while(!fs.existsSync(randomImage) && counter < 100) {
-          randomImage = getRandomCopiedImage(images, width, height);
-          counter++;
-        }
-        if (counter > 100) {
-          console.error('Counter reached 100 iterations while trying to find a copied image.')
-        }
-
         fs.ensureLink(randomImage, copyFile, function (err) {
           if (err) {
             console.log("Could not link " + randomImage + " to " + copyFile);
