@@ -84,22 +84,24 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
 
     /**
      * TODO Some images cannot be read,
-     * 'fd must be a file descriptor'
+     * 'fd must be a file descriptor' - maybe some issue between .jpeg/.jpg?
+     * Also limited to png,jpg,gif types
      */
     calipers.measure(file,function(err,result) {
-      if(err){
-
-        console.log(file);
-        console.error(err);
-      }
+      if(err){console.error(err)}
+      //If result is undefined for a particular file, return so we can continue to sanitize
       if(result == undefined) {
         return console.log('Result was undefined, could not read file: ' + file);
       }
+
+      //Get width and height from result object
       var width = result.pages.width,
           height = result.pages.height;
 
+      //Calculate the aspect ratio based on width/height of a particular image
       var aspectRation = calculateAspectRation(width, height);
 
+      //width and height 'keys'
       width = width / aspectRation;
       height = height / aspectRation;
 
@@ -109,28 +111,21 @@ glob(mediaDir + '/**/*', {nodir: true}, function(err, files) {
       if (!images[width].hasOwnProperty(height)) {
         images[width][height] = [];
       }
+
+      //Keeps the amount of images copied vs those linked according to sample size
       if (images[width][height].length < sampleSize) {
-        // Copy image
+        //images keeps track of those that are copied
         images[width][height].push(copyFile);
 
-
+        //Sync copy, because async copying results in attempts to link files that are not done copying
         fs.copySync(file,copyFile);
-        // copyfiles(file, copyFile, function (err, file) {
-        //   if (err) {
-        //     console.error(err)
-        //   }
-        //   else if (verbose) console.error("Copying image file: " + file + " to " + copyFile);
-        //
-        // });
-      } else {
-        // Create link to random previously copied image
-        /* TODO There has got to be a better way to do this.
-         * But still generating 'No such file or directory'
-         * on some images when trying to create link
-         * */
+      }
+      else {
 
+        //Gets a random image that was copied to be used for linking
         var randomImage = getRandomCopiedImage(images,width,height);
 
+        //async creates a hard link
         fs.ensureLink(randomImage, copyFile, function (err) {
           if (err) {
             console.log("Could not link " + randomImage + " to " + copyFile);
